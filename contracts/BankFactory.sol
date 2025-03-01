@@ -35,7 +35,7 @@ contract BankFactory {
         return koloBanks[user];
     }
 
-    function createKoloBank(uint32 _duration) public returns (address contractAddr) {
+    function createKoloBank(uint32 _duration) public {
         if (msg.sender == address(0)) revert InvalidAddress();
 
         bytes memory _bytecode = GetKoloBankBytecode(
@@ -55,7 +55,7 @@ contract BankFactory {
             )
         );
         address deployedAddress = address(uint160(uint256(_hash)));
-        contractAddr = deployedAddress;
+
         assembly {
             deployedAddress := create2(
                 0,
@@ -64,51 +64,41 @@ contract BankFactory {
                 _salt
             )
         }
+
         koloBanks[msg.sender].push(deployedAddress);
-
-
     }
-
- 
 
     function save(
         address _tokenAddr,
         address _contractAddress,
         uint256 _amount
-    ) public returns (bool) {
+    ) public {
         if (msg.sender == address(0)) revert InvalidAddress();
         if (_tokenAddr == address(0)) revert InvalidAddress();
         if (_contractAddress == address(0)) revert InvalidAddress();
-        for (uint i = 0; i < koloBanks[msg.sender].length; i++) {
-            if (_contractAddress == koloBanks[msg.sender][i]) {
-                KoloBank(koloBanks[msg.sender][i]).save(
-                    msg.sender,
-                    _tokenAddr,
-                    _amount
-                );
-                return true;
-            }
-        }
-        revert transactionFailed("save failed");
+        KoloBank(_contractAddress).save(
+            msg.sender,
+            _tokenAddr,
+            _amount
+        );
+
     }
 
-    function withdraw(address _contractAddress) public returns (bool) {
+    function withdraw(address _contractAddress) public {
         if (msg.sender == address(0)) revert InvalidAddress();
         if (_contractAddress == address(0)) revert InvalidAddress();
         for (uint i = 0; i < koloBanks[msg.sender].length; i++) {
             if (_contractAddress == koloBanks[msg.sender][i]) {
                 KoloBank(koloBanks[msg.sender][i]).withdraw(msg.sender);
-                return true;
             }
         }
-        revert transactionFailed("withdraw failed");
     }
 
     function SaveMultiple(
         address _contractAddress,
         address[] calldata _tokenAddrs,
         uint256[] calldata _amounts
-    ) public returns (bool) {
+    ) public {
         if (msg.sender == address(0)) revert InvalidAddress();
         if (_contractAddress == address(0)) revert InvalidAddress();
         if (
@@ -118,14 +108,12 @@ contract BankFactory {
         ) revert ArrayLengthMismatch();
         for (uint i = 0; i < koloBanks[msg.sender].length; i++) {
             if (_contractAddress == koloBanks[msg.sender][i]) {
-                KoloBank(koloBanks[msg.sender][i]).SaveMultiple(
+                KoloBank(_contractAddress).SaveMultiple(
                     msg.sender,
                     _tokenAddrs,
                     _amounts
                 );
-                return true;
             }
         }
-        revert transactionFailed("saves failed");
     }
 }

@@ -51,7 +51,6 @@ describe("BankFactory", function () {
             const { DAI, USDC, owner, USDT, Account1, Account2, deployedBankFactory } = await loadFixture(deployKoloBankFixture);
             const koloAddress = await deployedBankFactory.connect(Account1).createKoloBank(30)
             // expect(await deployedBankFactory.target).not.equal(0);
-            console.log(koloAddress)
         });
 
         it("Should set the right owner", async function () {
@@ -60,11 +59,17 @@ describe("BankFactory", function () {
             
             await deployedBankFactory.connect(Account1).createKoloBank(30)
             const koloAddrs = await deployedBankFactory.getKolo(Account1.address)
-            // let KoloBank = await ethers.getContractAt('KoloBank', koloAddress);
+            // let KoloBank = await ethers.getContractAt('KoloBank', koloAddress[0]);
             // expect(await deployedBankFactory.target).not.equal(0);
             // const koloOwner = await KoloBank(koloAddress).owner()
             // expect(Account1.address).to.equal(koloOwner);
-            console.log(koloAddrs)
+            await DAI.transfer(Account1.address, 100000)
+            console.log(await DAI.balanceOf(Account1.address))
+            await DAI.connect(Account1).approve(koloAddrs[0], 100000)
+            await DAI.transfer(koloAddrs[0], 100000)
+            await deployedBankFactory.connect(Account1).save(koloAddrs[0], DAI.target, 1000)
+            console.log(await DAI.balanceOf(koloAddrs[0]))
+            
         });
 
     });
