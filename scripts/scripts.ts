@@ -35,7 +35,11 @@ async function main() {
     console.log(
         `USDT Address: ${USDT.target}`
     );
-
+console.log("verify contract on etherscan")
+    await hre.run("verify:verify", {
+        address: deployedBankFactory.target,
+        constructorArguments: tokenAddresses,
+    });
 
 }
 
